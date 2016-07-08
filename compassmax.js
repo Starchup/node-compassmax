@@ -1,5 +1,5 @@
 /* Module Dependencies */
-var transport = require('utilities.transport.js');
+var transport = require('./utilities/transport.js');
 
 var CONFIG = {
     staticPublic: null,

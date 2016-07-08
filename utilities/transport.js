@@ -1,7 +1,7 @@
 /* Module Dependencies */
 var net = require('net');
 var base64 = require('base64-js');
-var framer = require('framer.js');
+var framer = require('./framer.js');
 
 /**
  * Formats and makes a TCP request
