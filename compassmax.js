@@ -101,12 +101,10 @@ var Customers = {
 var CustomerProfile = {
     service: 'customerProfile',
 
-    //move this to customer or keep here?
-
     //Private - Save customerProfile object
-    profile: function(customerId, phone, email, address1, address2, city, state, zip, firstName, lastName, starchPref, returnPref, instructions) {
+    profile: function(customerId, phone, email, address1, address2, city, state, zip, firstName, lastName, starchPref, returnPref, instructions, username) {
         this.customerId = customerId;
-        this.phone = phone;
+        this.phone = deformatPhone(phone);
         this.email = email;
         this.address1 = address1;
         this.address2 = address2;
@@ -118,6 +116,11 @@ var CustomerProfile = {
         this.starchPref = starchPref;
         this.returnPref = returnPref;
         this.instructions = instructions;
+        this.username = username;
+
+        function deformatPhone(phone) {
+            return phone.replace(/[()-\s]/g, '');
+        }
     },
 
 
