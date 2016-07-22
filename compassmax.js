@@ -166,6 +166,81 @@ var Tickets = {
         };
         return transport.makeRequest(CONFIG, params);
     },
+
+    //Convenience wrapper for getting tickets by customer and date
+    getTickets: function(customerId, startDate, endDate, requestId) {
+        var transactionByTicketNumber = {};
+
+        return Accounts.transactionHistory(customerId, startDate, endDate, requestId).then(function(res) {
+            var serviceTransactions = res.data.filter(function(transaction) {
+                return transaction.ticketNum;
+            });
+
+            if (!serviceTransactions || !serviceTransactions.length) return;
+
+            var ticketPromises = [];
+            serviceTransactions.forEach(function(trans) {
+                transactionByTicketNumber[trans.ticketNum] = trans;
+                ticketPromises.push(Accounts.serviceTransactionDetail(trans.transactionId, requestId));
+            });
+            return Promise.all(ticketPromises);
+        }).then(function(tickets) {
+            if (!tickets || !tickets.length) return [];
+
+            //Add transaction description and created date to ticket
+            tickets.forEach(function(ticket) {
+                if (!ticket.data) return;
+                if (transactionByTicketNumber[ticket.data.ticketNum]) {
+                    ticket.data.description = transactionByTicketNumber[ticket.data.ticketNum].description;
+                    ticket.data.createdDate = transactionByTicketNumber[ticket.data.ticketNum].date;
+                }
+            });
+            return tickets;
+        });
+    },
+}
+
+var Accounts = {
+    service: 'accounts',
+
+    transactionHistory: function(customerId, startDate, endDate, requestId) {
+        if (!customerId) throw new Error('customerId required');
+        if (!startDate) startDate = null;
+        if (!endDate) endDate = null;
+
+        var params = {
+            service: this.service,
+            method: 'transactionHistory',
+            args: [customerId, startDate, endDate],
+            id: requestId || 1,
+        };
+        return transport.makeRequest(CONFIG, params).then(function(result) {
+            //Format response from arrays to objects
+            var formattedData = result.data.map(function(transaction) {
+                return {
+                    transactionId: transaction[0],
+                    amount: transaction[1],
+                    date: transaction[2],
+                    description: transaction[3],
+                    ticketNum: transaction[4]
+                };
+            });
+            result.data = formattedData;
+            return result;
+        });
+    },
+
+    serviceTransactionDetail: function(transactionId, requestId) {
+        if (!transactionId) throw new Error('transactionId required');
+
+        var params = {
+            service: this.service,
+            method: 'serviceTransactionDetail',
+            args: [transactionId],
+            id: requestId || 1,
+        };
+        return transport.makeRequest(CONFIG, params);
+    }
 }
 
 
@@ -271,5 +346,6 @@ function getType(value) {
 COMPASSMAX.prototype.Customers = Customers;
 COMPASSMAX.prototype.CustomerProfile = CustomerProfile;
 COMPASSMAX.prototype.Tickets = Tickets;
+COMPASSMAX.prototype.Accounts = Accounts;
 COMPASSMAX.prototype.System = System;
 COMPASSMAX.prototype.Util = Util;
