@@ -2,6 +2,7 @@
 var net = require('net');
 var base64 = require('base64-js');
 var framer = require('./framer.js');
+var Promise = require('bluebird');
 
 /**
  * Formats and makes a TCP request
@@ -14,6 +15,7 @@ var framer = require('./framer.js');
  *          param{staticSecret}     String.  Secret signing key.
 
  * param{params}                    (Required) data to send on request. Must be a singular object.
+ *
  *          param{service}          String.  Name of service to call.
  *          param{method}           String.  Method of above service to call.
  *          param{args}             Array.   Arguments to pass to above method.
@@ -74,7 +76,17 @@ function makeRequest(config, params) {
                 var msg = framer.decode(data, remoteEphemeralPublic, ephemeralKeypair.privateKey);
                 client.destroy();
 
-                if (msg[0].error) return reject(msg[0]);
+                if (msg[0].error) {
+                    //Format error object
+                    var err = new Error(msg[0].error.message);
+                    err.code = msg[0].error.code;
+                    err.data = msg[0].data;
+                    err.warnings = msg[0].warnings;
+                    err.params = params[0];
+
+                    return reject(err);
+                }
+
                 return resolve(msg[0]);
             }
         });
