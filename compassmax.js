@@ -33,19 +33,6 @@ module.exports = COMPASSMAX;
 var Customers = {
     service: 'customers',
 
-    findCustomers: function(searchTerms, requestId) {
-        checkType('searchTerms', searchTerms, 'Object');
-
-        var params = {
-            service: this.service,
-            method: 'findCustomers',
-            args: [searchTerms],
-            id: requestId || 1,
-        };
-
-        return transport.makeRequest(CONFIG, params);
-    },
-
     createCustomer: function(profileData, requestId) {
         checkType('profileData', profileData, 'Object');
         var missingProfileFields = missingFields('profileData', profileData, ['phone', 'firstName', 'lastName']);
@@ -80,17 +67,6 @@ var Customers = {
             service: this.service,
             method: 'schedulePickup',
             args: [data.customerId, data.routeNumber, data.date, data.message],
-            id: requestId || 1,
-        };
-        return transport.makeRequest(CONFIG, params);
-    },
-
-    getScheduledPickups: function(customerId, requestId) {
-        if (!customerId) throw new Error('customerId required');
-        var params = {
-            service: this.service,
-            method: 'getScheduledPickups',
-            args: [customerId],
             id: requestId || 1,
         };
         return transport.makeRequest(CONFIG, params);
@@ -154,18 +130,6 @@ var CustomerProfile = {
 //Tickets methods
 var Tickets = {
     service: 'tickets',
-
-    deliverRouteTickets: function(ticketIds, requestId) {
-        checkType('ticketIds', ticketIds, 'Array');
-
-        var params = {
-            service: this.service,
-            method: 'deliverRouteTickets',
-            args: [ticketIds],
-            id: requestId || 1,
-        };
-        return transport.makeRequest(CONFIG, params);
-    },
 
     //Convenience wrapper for getting tickets by customer and date
     getTickets: function(customerId, startDate, endDate, requestId) {
