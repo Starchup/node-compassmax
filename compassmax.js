@@ -113,7 +113,7 @@ var CustomerProfile = {
         return transport.makeRequest(CONFIG, params);
     },
 
-    getProfile: function(customerId) {
+    getProfile: function(customerId, requestId) {
         if (!customerId) throw new Error('customerId required');
 
         var params = {
