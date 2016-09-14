@@ -1,24 +1,24 @@
 {
-  "name": "node-compassmax",
-  "version": "1.0.0",
-  "description": "Compassmax POS wrapper for Node JS",
-  "main": "compassmax.js",
-  "scripts": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Starchup/node-compassmax.git"
-  },
-  "keywords": [
-    "starchup"
-  ],
-  "author": "Starchup Inc",
-  "bugs": {
-    "url": "https://github.com/Starchup/node-compassmax/issues"
-  },
-  "homepage": "https://github.com/Starchup/node-compassmax#readme",
-  "dependencies": {
-    "base64-js": "^1.1.2",
-    "bluebird": "^3.4.1",
-    "libsodium-wrappers": "^0.3.0"
-  }
+    "name": "node-compassmax",
+    "version": "1.0.1",
+    "description": "Compassmax POS wrapper for Node JS",
+    "main": "compassmax.js",
+    "scripts": {},
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Starchup/node-compassmax.git"
+    },
+    "keywords": [
+        "starchup"
+    ],
+    "author": "Starchup Inc",
+    "bugs": {
+        "url": "https://github.com/Starchup/node-compassmax/issues"
+    },
+    "homepage": "https://github.com/Starchup/node-compassmax#readme",
+    "dependencies": {
+        "base64-js": "^1.1.2",
+        "bluebird": "^3.4.1",
+        "libsodium-wrappers": "^0.3.0"
+    }
 }
