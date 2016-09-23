@@ -64,6 +64,12 @@ function makeRequest(config, params) {
             if (!handshakeReceived) {
                 //Read the server's handshake
                 remoteEphemeralPublic = framer.remoteEphemeralKey(data);
+                if (!framer.serverKeyMatches(data, config.key)) {
+                    var eMsg = 'Signing key from server does not match expected public server key. Closing connection.';
+                    if (config.identifier) eMsg += '  Identifier: ' + config.identifier;
+                    client.destroy(eMsg);
+                    return reject(eMsg);
+                }
                 handshakeReceived = true;
 
                 //Upon receiving their key, send our request
@@ -83,6 +89,7 @@ function makeRequest(config, params) {
                     err.data = msg[0].data;
                     err.warnings = msg[0].warnings;
                     err.params = params[0];
+                    err.identifier = config.identifier;
 
                     return reject(err);
                 }

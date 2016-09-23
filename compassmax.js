@@ -6,15 +6,17 @@ var COMPASSMAX = function(config) {
     var self = this;
 
     //Check required fields
-    var missingConfigFields = findMissingFields('config', config, ['staticPublic', 'staticSecret', 'host', 'port']);
+    var missingConfigFields = findMissingFields('config', config, ['staticPublic', 'staticSecret', 'host', 'port', 'key']);
     if (missingConfigFields) throw new Error(missingConfigFields);
 
     //Check that static keys are base64 strings
     var b64 = /^([A-Za-z0-9\+\/]{4})*([A-Za-z0-9\+\/]{4}|[A-Za-z0-9\+\/]{3}=|[A-Za-z0-9\+\/]{2}==)$/;
     checkType('config.staticPublic', config.staticPublic, 'String');
     checkType('config.staticSecret', config.staticSecret, 'String');
+    checkType('config.key', config.key, 'String');
     if (!config.staticPublic.match(b64)) throw new Error('config.staticPublic must be base64 encoded');
     if (!config.staticSecret.match(b64)) throw new Error('config.staticSecret must be base64 encoded');
+    if (!config.key.match(b64)) throw new Error('config.key must be base64 encoded');
 
     //Config
     self.CONFIG = config;

@@ -2,7 +2,7 @@
 
 /* Dependencies */
 var sodium = require('libsodium-wrappers');
-
+var base64 = require('base64-js');
 
 /* Module-global variables */
 
@@ -51,7 +51,7 @@ function createNetstring(payload) {
  * Parses remote ephemeral public key from netstring payload
  */
 function remoteEphemeralKey(data) {
-    payload = parseNetstring(data);
+    var payload = parseNetstring(data);
 
     // Remote signing key.
     var publicA = payload.slice(0, sodium.crypto_sign_PUBLICKEYBYTES);
@@ -63,6 +63,19 @@ function remoteEphemeralKey(data) {
     var remoteEphemeralPublic = sodium.crypto_sign_open(publicB, publicA);
 
     return remoteEphemeralPublic;
+}
+
+/**
+ * Checks the public server key from netstring payload
+ */
+function serverKeyMatches(data, serverKey) {
+    var payload = parseNetstring(data);
+
+    // Remote signing key.
+    var publicA = toArrayBuffer(payload.slice(0, sodium.crypto_sign_PUBLICKEYBYTES));
+    var key = base64.toByteArray(serverKey);
+
+    return arraysEqual(publicA, key);
 }
 
 /**
@@ -161,11 +174,21 @@ function arraysEqual(a1, a2) {
     return true;
 }
 
+function toArrayBuffer(buf) {
+    var ab = new ArrayBuffer(buf.length);
+    var view = new Uint8Array(ab);
+    for (var i = 0; i < buf.length; ++i) {
+        view[i] = buf[i];
+    }
+    return view;
+}
+
 
 module.exports = {
     createNetstring: createNetstring,
     parseNetstring: parseNetstring,
     prepareHandshake: prepareHandshake,
+    serverKeyMatches: serverKeyMatches,
     remoteEphemeralKey: remoteEphemeralKey,
     generateEphemeralKeys: generateEphemeralKeys,
     encode: encode,
