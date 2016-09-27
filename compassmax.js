@@ -165,7 +165,7 @@ var COMPASSMAX = function(config) {
         getTickets: function(customerId, startDate, endDate, requestId) {
             var transactionByTicketNumber = {};
 
-            return Accounts.transactionHistory(customerId, startDate, endDate, requestId).then(function(res) {
+            return self.Accounts.transactionHistory(customerId, startDate, endDate, requestId).then(function(res) {
                 var serviceTransactions = res.data.filter(function(transaction) {
                     return transaction.ticketNum;
                 });
@@ -175,7 +175,7 @@ var COMPASSMAX = function(config) {
                 var ticketPromises = [];
                 serviceTransactions.forEach(function(trans) {
                     transactionByTicketNumber[trans.ticketNum] = trans;
-                    ticketPromises.push(Accounts.serviceTransactionDetail(trans.transactionId, requestId));
+                    ticketPromises.push(self.Accounts.serviceTransactionDetail(trans.transactionId, requestId));
                 });
                 return Promise.all(ticketPromises);
             }).then(function(tickets) {
