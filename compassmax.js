@@ -131,7 +131,7 @@ var COMPASSMAX = function(config) {
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        getProfile: function(customerId) {
+        getProfile: function(customerId, requestId) {
             if (!customerId) throw new Error('customerId required');
 
             var params = {
