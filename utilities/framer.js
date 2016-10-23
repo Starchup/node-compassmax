@@ -55,9 +55,11 @@ function remoteEphemeralKey(data) {
 
     // Remote signing key.
     var publicA = payload.slice(0, sodium.crypto_sign_PUBLICKEYBYTES);
+    publicA = toUint8(publicA);
 
     // Signed remote ephemeral public key.
     var publicB = payload.slice(publicA.length, payload.length);
+    publicB = toUint8(publicB);
 
     // Retrieve the signed key, validating the signature in the process.
     var remoteEphemeralPublic = sodium.crypto_sign_open(publicB, publicA);
@@ -183,6 +185,11 @@ function toArrayBuffer(buf) {
     return view;
 }
 
+function toUint8(buffer) {
+    if(!buffer instanceof Uint8Array) return new Uint8Array(buffer);
+    else return buffer;
+}
+
 
 module.exports = {
     createNetstring: createNetstring,
@@ -192,5 +199,6 @@ module.exports = {
     remoteEphemeralKey: remoteEphemeralKey,
     generateEphemeralKeys: generateEphemeralKeys,
     encode: encode,
-    decode: decode
+    decode: decode,
+    toUint8: toUint8
 };
