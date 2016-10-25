@@ -40,9 +40,7 @@ function makeRequest(config, params) {
             ephemeralKeypair = framer.generateEphemeralKeys();
 
             var handshake = framer.prepareHandshake(staticPublic, staticSecret, ephemeralKeypair.publicKey);
-            handshake = framer.toUint8(new Buffer(handshake));
-
-            client.write(handshake);
+            client.write(new Buffer(handshake));
         });
 
         //Handlers
@@ -64,19 +62,8 @@ function makeRequest(config, params) {
         //When date received from server
         client.on('data', function(data) {
             if (!handshakeReceived) {
-                
-                //Prevent crashing on unreadable key
-                try {
-                    //Read the server's handshake
-                    remoteEphemeralPublic = framer.remoteEphemeralKey(data);                    
-                }
-                catch(e) {
-                    var cMsg = 'Unreadable handshake';
-                    if(config.identifier) cMsg += ' for identifier ' + config.identifier;
-                    console.log(cMsg);
-                    return reject(e);
-                }
-
+                //Read the server's handshake
+                remoteEphemeralPublic = framer.remoteEphemeralKey(data);
                 if (!framer.serverKeyMatches(data, config.key)) {
                     var eMsg = 'Signing key from server does not match expected public server key. Closing connection.';
                     if (config.identifier) eMsg += '  Identifier: ' + config.identifier;
@@ -88,9 +75,8 @@ function makeRequest(config, params) {
                 //Upon receiving their key, send our request
                 //Wrap params in array, as expected by server
                 params = [params];
-                var message = framer.encode(params, remoteEphemeralPublic, ephemeralKeypair.privateKey);
-                var messageToSend = framer.toUint8(new Buffer(message.buffer));
-                client.write(messageToSend);
+                message = framer.encode(params, remoteEphemeralPublic, ephemeralKeypair.privateKey);
+                client.write(new Buffer(message.buffer));
             } else {
                 //Parse server response and decode
                 var msg = framer.decode(data, remoteEphemeralPublic, ephemeralKeypair.privateKey);

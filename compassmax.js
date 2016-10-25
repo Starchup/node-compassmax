@@ -42,7 +42,7 @@ var COMPASSMAX = function(config) {
 
         createCustomer: function(profileData, requestId) {
             checkType('profileData', profileData, 'Object');
-            var missingProfileFields = findMissingFields('profileData', profileData, ['firstName', 'lastName']);
+            var missingProfileFields = findMissingFields('profileData', profileData, ['phone', 'firstName', 'lastName']);
             if (missingProfileFields) throw new Error(missingProfileFields);
 
             var params = {
@@ -113,7 +113,6 @@ var COMPASSMAX = function(config) {
             this.username = username;
 
             function deformatPhone(phone) {
-                if(!phone) return;
                 return phone.replace(/[()-\s]/g, '');
             }
         },
