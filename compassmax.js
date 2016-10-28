@@ -113,7 +113,7 @@ var COMPASSMAX = function(config) {
             this.username = username;
 
             function deformatPhone(phone) {
-                if (!phone) return;
+                if (!phone) return '';
                 return phone.replace(/[()-\s]/g, '');
             }
         },
