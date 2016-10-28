@@ -79,12 +79,25 @@ function makeRequest(config, params) {
                 client.write(new Buffer(message.buffer));
             } else {
                 //Parse server response and decode
-                var msg = framer.decode(data, remoteEphemeralPublic, ephemeralKeypair.privateKey);
+                var msg;
+                var err;                
+
+                //Handle badly encoded responses
+                try {
+                    msg = framer.decode(data, remoteEphemeralPublic, ephemeralKeypair.privateKey);                    
+                } catch(e) {
+                    client.destroy();
+                    err = new Error(e.message);
+                    err.params = params[0];
+                    err.identifier = config.identifier;
+
+                    return reject(e);
+                }
                 client.destroy();
 
                 if (msg[0].error) {
                     //Format error object
-                    var err = new Error(msg[0].error.message);
+                    err = new Error(msg[0].error.message);
                     err.code = msg[0].error.code;
                     err.data = msg[0].data;
                     err.warnings = msg[0].warnings;
