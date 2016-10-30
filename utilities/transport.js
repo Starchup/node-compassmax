@@ -26,6 +26,7 @@ function makeRequest(config, params) {
     var handshakeReceived = false;
     var ephemeralKeypair;
     var remoteEphemeralPublic;
+    var receivedData;
 
     //convert keys to byteArrays
     var staticPublic = base64.toByteArray(config.staticPublic);
@@ -78,36 +79,44 @@ function makeRequest(config, params) {
                 message = framer.encode(params, remoteEphemeralPublic, ephemeralKeypair.privateKey);
                 client.write(new Buffer(message.buffer));
             } else {
-                //Parse server response and decode
-                var msg;
-                var err;                
 
-                //Handle badly encoded responses
-                try {
-                    msg = framer.decode(data, remoteEphemeralPublic, ephemeralKeypair.privateKey);                    
-                } catch(e) {
+                if(!receivedData) receivedData = data;
+                else receivedData = Buffer.concat([receivedData, data]);
+                
+                if(framer.isEndOfNetstring(receivedData))
+                {
+                    //Parse server response and decode
+                    var msg;
+                    var err;                
+
+                    //Handle badly encoded responses
+                    try {
+                        msg = framer.decode(receivedData, remoteEphemeralPublic, ephemeralKeypair.privateKey);
+                    } catch(e) {
+                        client.destroy();
+                        var eMsg = e.message || 'Unable to decode message';
+                        err = new Error(eMsg);
+                        err.params = params[0];
+                        err.identifier = config.identifier;
+
+                        return reject(e);
+                    }
                     client.destroy();
-                    err = new Error(e.message);
-                    err.params = params[0];
-                    err.identifier = config.identifier;
 
-                    return reject(e);
+                    if (msg[0].error) {
+                        //Format error object
+                        err = new Error(msg[0].error.message);
+                        err.code = msg[0].error.code;
+                        err.data = msg[0].data;
+                        err.warnings = msg[0].warnings;
+                        err.params = params[0];
+                        err.identifier = config.identifier;
+
+                        return reject(err);
+                    }
+
+                    return resolve(msg[0]);
                 }
-                client.destroy();
-
-                if (msg[0].error) {
-                    //Format error object
-                    err = new Error(msg[0].error.message);
-                    err.code = msg[0].error.code;
-                    err.data = msg[0].data;
-                    err.warnings = msg[0].warnings;
-                    err.params = params[0];
-                    err.identifier = config.identifier;
-
-                    return reject(err);
-                }
-
-                return resolve(msg[0]);
             }
         });
     });

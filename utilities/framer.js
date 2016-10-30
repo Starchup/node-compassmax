@@ -43,6 +43,11 @@ function createNetstring(payload) {
     return bytes;
 }
 
+function isEndOfNetstring(data) {
+    var ns = data.toString('utf8');
+    return ns[ns.length -1] === trailing;
+}
+
 
 
 /* Crypto Methods */
@@ -187,10 +192,11 @@ function toArrayBuffer(buf) {
 module.exports = {
     createNetstring: createNetstring,
     parseNetstring: parseNetstring,
+    isEndOfNetstring: isEndOfNetstring,
     prepareHandshake: prepareHandshake,
     serverKeyMatches: serverKeyMatches,
     remoteEphemeralKey: remoteEphemeralKey,
     generateEphemeralKeys: generateEphemeralKeys,
     encode: encode,
-    decode: decode
+    decode: decode,
 };
