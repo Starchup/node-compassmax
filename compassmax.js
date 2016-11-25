@@ -237,6 +237,23 @@ var COMPASSMAX = function(config) {
             };
             return transport.makeRequest(self.CONFIG, params);
         },
+
+        //Posts record of a payment and returns a transactionId
+        postCCPayment: function(customerId, amount, cardNumber, expDate, authNumber, requestId) {
+            if (!customerId) throw new Error('customerId required');
+            if (!amount) throw new Error('amount required');
+            if (!cardNumber) throw new Error('cardNumber required');
+            if (!expDate) throw new Error('expDate required');
+            if (!authNumber) throw new Error('authNumber required');
+
+            var params = {
+                service: this.service,
+                method: 'postCCPayment',
+                args: [customerId, amount, cardNumber, expDate, authNumber],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        },
     };
 
 
