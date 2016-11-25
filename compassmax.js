@@ -254,6 +254,18 @@ var COMPASSMAX = function(config) {
             };
             return transport.makeRequest(self.CONFIG, params);
         },
+
+        accountSummary: function(customerId) {
+            if (!customerId) throw new Error('customerId required');
+
+            var params = {
+                service: this.service,
+                method: 'accountSummary',
+                args: [customerId],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        },
     };
 
 
