@@ -1,6 +1,6 @@
 {
     "name": "node-compassmax",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "Compassmax POS wrapper for Node JS",
     "main": "compassmax.js",
     "scripts": {},
