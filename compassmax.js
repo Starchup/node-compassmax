@@ -268,6 +268,22 @@ var COMPASSMAX = function(config) {
         },
     };
 
+    self.Routes = {
+        service: 'routes',
+
+        callins: function(customerId, startDate, endDate, requestId) {
+            if (!customerId) throw new Error('customerId required');
+
+            var params = {
+                service: this.service,
+                method: 'callins',
+                args: [customerId, startDate, endDate],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        }
+    };
+
 
     //System Information methods
     self.System = {
