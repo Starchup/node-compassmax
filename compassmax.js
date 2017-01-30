@@ -271,13 +271,13 @@ var COMPASSMAX = function(config) {
     self.Routes = {
         service: 'routes',
 
-        callins: function(customerId, startDate, endDate, requestId) {
-            if (!customerId) throw new Error('customerId required');
+        callins: function(routeNumber, startDate, endDate, requestId) {
+            if (!routeNumber) throw new Error('routeNumber required');
 
             var params = {
                 service: this.service,
                 method: 'callins',
-                args: [customerId, startDate, endDate],
+                args: [routeNumber, startDate, endDate],
                 id: requestId || 1,
             };
             return transport.makeRequest(self.CONFIG, params);
