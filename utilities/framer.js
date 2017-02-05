@@ -3,9 +3,7 @@
 /* Dependencies */
 var sodium = require('libsodium-wrappers');
 var base64 = require('base64-js');
-var Iconv = require('iconv').Iconv;
-//Attempt to transliterate unsupported iso-8859-1 characters, ignore otherwise
-var iconv = new Iconv('utf-8', 'iso-8859-1//TRANSLIT//IGNORE');
+var iconv = require('iconv-lite');
 
 /* Module-global variables */
 
@@ -100,7 +98,8 @@ function prepareHandshake(staticSigningPublic, staticSigningSecret, ephemeralPub
 function encode(message, publicKey, secretKey) {
     //Stringify, encode utf8, make nonce, encode and frame
     message = JSON.stringify(message);
-    message = iconv.convert(message).toString();
+    //Convert and deconvert iso-8859-1 to remove unsupported chars
+    message = iconv.encode(message, 'iso-8859-1').toString();
     message = encode_utf8(message);
     var nonce = sodium.randombytes_buf(sodium.crypto_box_NONCEBYTES);
     var encoded = sodium.crypto_box_easy(message, nonce, publicKey, secretKey);
