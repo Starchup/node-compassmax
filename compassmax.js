@@ -174,11 +174,16 @@ var COMPASSMAX = function(config) {
                 if (!serviceTransactions || !serviceTransactions.length) return;
 
                 var ticketPromises = [];
-                serviceTransactions.forEach(function(trans) {
-                    transactionByTicketNumber[trans.ticketNum] = trans;
-                    ticketPromises.push(self.Accounts.serviceTransactionDetail(trans.transactionId, requestId));
+                return serviceTransactions.reduce(function(prev, trans) {
+                    return prev.then(function() {
+                        transactionByTicketNumber[trans.ticketNum] = trans;
+                        return self.Accounts.serviceTransactionDetail(trans.transactionId, requestId);
+                    }).then(function(res) {
+                        ticketPromises.push(res);
+                    });
+                }, Promise.resolve()).then(function() {
+                    return ticketPromises;
                 });
-                return Promise.all(ticketPromises);
             }).then(function(tickets) {
                 if (!tickets || !tickets.length) return [];
 
