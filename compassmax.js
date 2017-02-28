@@ -97,20 +97,20 @@ var COMPASSMAX = function(config) {
 
         //Save customerProfile object
         profile: function(customerId, phone, email, address1, address2, city, state, zip, firstName, lastName, starchPref, returnPref, instructions, username) {
-            this.customerId = customerId;
-            this.phone = deformatPhone(phone);
-            this.email = email;
-            this.address1 = address1;
-            this.address2 = address2;
-            this.city = city;
-            this.state = state;
-            this.zip = zip;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.starchPref = starchPref;
-            this.returnPref = returnPref;
-            this.instructions = instructions;
-            this.username = username;
+            if (customerId) this.customerId = customerId;
+            if (phone) this.phone = deformatPhone(phone);
+            if (email) this.email = email;
+            if (address1) this.address1 = address1;
+            if (address2) this.address2 = address2;
+            if (city) this.city = city;
+            if (state) this.state = state;
+            if (zip) this.zip = zip;
+            if (firstName) this.firstName = firstName;
+            if (lastName) this.lastName = lastName;
+            if (starchPref) this.starchPref = starchPref;
+            if (returnPref) this.returnPref = returnPref;
+            if (instructions) this.instructions = instructions;
+            if (username) this.username = username;
 
             function deformatPhone(phone) {
                 if (!phone) return '';
