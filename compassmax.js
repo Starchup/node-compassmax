@@ -307,7 +307,18 @@ var COMPASSMAX = function(config) {
                 id: requestId || 1,
             };
             return transport.makeRequest(self.CONFIG, params);
-        }
+        },
+
+        getRouteInfo: function(routeId, requestId) {
+            if (!routeId) throw new Error('routeId required');
+            var params = {
+                service: this.service,
+                method: 'getRouteInfo',
+                args: [routeId],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        },
     };
 
 
