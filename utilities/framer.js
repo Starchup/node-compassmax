@@ -99,7 +99,7 @@ function encode(message, publicKey, secretKey) {
     //Stringify, encode utf8, make nonce, encode and frame
     message = JSON.stringify(message);
     //Convert and deconvert iso-8859-1 to remove unsupported chars
-    message = iconv.encode(message, 'iso-8859-1').toString();
+    message = iconv.encode(message, 'iso-8859-1').toString().replace(/�/g, '?');
     message = encode_utf8(message);
     var nonce = sodium.randombytes_buf(sodium.crypto_box_NONCEBYTES);
     var encoded = sodium.crypto_box_easy(message, nonce, publicKey, secretKey);
