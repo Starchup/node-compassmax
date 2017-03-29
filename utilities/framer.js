@@ -7,6 +7,9 @@ var iconv = require('iconv-lite');
 
 /* Module-global variables */
 
+//Limit for huge array manipulation
+var maxArgSize = 100000;
+
 //Local ephemeral keypair
 var keypair;
 
@@ -157,7 +160,12 @@ function utf8_to_bytes(s) {
 }
 
 function bytes_to_utf8(b) {
-    return String.fromCharCode.apply(null, b);
+    var string = '';
+    //Chunk large arrays
+    for (i = 0; i < b.length; i += maxArgSize) {
+        string += String.fromCharCode.apply(null, b.slice(i, i + maxArgSize));
+    }
+    return string;
 }
 
 function encode_utf8(s) {
