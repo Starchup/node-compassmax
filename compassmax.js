@@ -98,7 +98,8 @@ var COMPASSMAX = function(config) {
         //Save customerProfile object
         profile: function(customerId, phone, email, address1, address2, city, state, zip, firstName, lastName, starchPref, returnPref, instructions, username) {
             if (customerId) this.customerId = customerId;
-            if (phone) this.phone = deformatPhone(phone);
+            //Always send phone, even as empty string to prevent Compassmax error
+            this.phone = deformatPhone(phone);
             if (email) this.email = email;
             if (address1) this.address1 = address1;
             if (address2) this.address2 = address2;
