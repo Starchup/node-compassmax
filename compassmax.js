@@ -320,6 +320,28 @@ var COMPASSMAX = function(config) {
             };
             return transport.makeRequest(self.CONFIG, params);
         },
+
+        listReadyTickets: function(routeId, requestId) {
+            if (!routeId) throw new Error('routeId required');
+            var params = {
+                service: this.service,
+                method: 'listReadyTickets',
+                args: [routeId],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        },
+
+        listTruckTickets: function(routeId, requestId) {
+            if (!routeId) throw new Error('routeId required');
+            var params = {
+                service: this.service,
+                method: 'listTruckTickets',
+                args: [routeId],
+                id: requestId || 1,
+            };
+            return transport.makeRequest(self.CONFIG, params);
+        },
     };
 
 
