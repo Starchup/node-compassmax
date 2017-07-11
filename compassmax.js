@@ -442,10 +442,9 @@ var COMPASSMAX = function(config) {
 
                 if (!self[d.service]) throw new Error(d.service + ' is not a supported service');
                 if (!self[d.service][d.method]) throw new Error(d.method + ' is not a supported method of service ' + d.service);
+
                 var fn = self[d.service][d.method];
-
-
-                var id = data.requestId || i + 1;
+                var id = d.requestId || i + 1;
                 var args = d.args.concat([id, true]);
                 var boundArgs = [id, true];
 
