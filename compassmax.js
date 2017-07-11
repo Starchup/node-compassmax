@@ -1,5 +1,8 @@
 /* Module Dependencies */
 var transport = require('./utilities/transport');
+var tools = require('./utilities/tools');
+var checkType = tools.checkType;
+var forceToArray = tools.forceToArray;
 
 /* Constructor */
 var COMPASSMAX = function(config) {
@@ -27,7 +30,7 @@ var COMPASSMAX = function(config) {
 
         service: 'customers',
 
-        findCustomers: function(searchTerms, requestId) {
+        findCustomers: function(searchTerms, requestId, batch) {
             checkType('searchTerms', searchTerms, 'Object');
 
             var params = {
@@ -36,11 +39,11 @@ var COMPASSMAX = function(config) {
                 args: [searchTerms],
                 id: requestId || 1,
             };
-
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        createCustomer: function(profileData, requestId) {
+        createCustomer: function(profileData, requestId, batch) {
             checkType('profileData', profileData, 'Object');
             var missingProfileFields = findMissingFields('profileData', profileData, ['firstName', 'lastName']);
             if (missingProfileFields) throw new Error(missingProfileFields);
@@ -51,10 +54,11 @@ var COMPASSMAX = function(config) {
                 args: [profileData],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        availablePickups: function(customerId, requestId) {
+        availablePickups: function(customerId, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
             var params = {
                 service: this.service,
@@ -62,10 +66,11 @@ var COMPASSMAX = function(config) {
                 args: [customerId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        schedulePickup: function(data, requestId) {
+        schedulePickup: function(data, requestId, batch) {
             checkType('data', data, 'Object');
             var missingDataFields = findMissingFields('data', data, ['customerId', 'routeNumber', 'date']);
             if (missingDataFields) throw new Error(missingDataFields);
@@ -76,10 +81,11 @@ var COMPASSMAX = function(config) {
                 args: [data.customerId, data.routeNumber, data.date, data.message],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        getScheduledPickups: function(customerId, requestId) {
+        getScheduledPickups: function(customerId, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
             var params = {
                 service: this.service,
@@ -87,6 +93,7 @@ var COMPASSMAX = function(config) {
                 args: [customerId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
     };
@@ -120,7 +127,7 @@ var COMPASSMAX = function(config) {
         },
 
 
-        updateProfile: function(customerId, profileData, requestId) {
+        updateProfile: function(customerId, profileData, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
             checkType('profileData', profileData, 'Object');
 
@@ -130,10 +137,11 @@ var COMPASSMAX = function(config) {
                 args: [customerId, profileData],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        getProfile: function(customerId, requestId) {
+        getProfile: function(customerId, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
 
             var params = {
@@ -142,6 +150,7 @@ var COMPASSMAX = function(config) {
                 args: [customerId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
     };
@@ -151,7 +160,7 @@ var COMPASSMAX = function(config) {
     self.Tickets = {
         service: 'tickets',
 
-        deliverRouteTickets: function(ticketIds, requestId) {
+        deliverRouteTickets: function(ticketIds, requestId, batch) {
             checkType('ticketIds', ticketIds, 'Array');
 
             var params = {
@@ -160,6 +169,7 @@ var COMPASSMAX = function(config) {
                 args: [ticketIds],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
@@ -228,11 +238,12 @@ var COMPASSMAX = function(config) {
                     };
                 });
                 result.data = formattedData;
+
                 return result;
             });
         },
 
-        serviceTransactionDetail: function(transactionId, requestId) {
+        serviceTransactionDetail: function(transactionId, requestId, batch) {
             if (!transactionId) throw new Error('transactionId required');
 
             var params = {
@@ -241,11 +252,12 @@ var COMPASSMAX = function(config) {
                 args: [transactionId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
         //Posts record of a payment and returns a transactionId
-        postCCPayment: function(customerId, amount, cardNumber, expDate, authNumber, requestId) {
+        postCCPayment: function(customerId, amount, cardNumber, expDate, authNumber, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
             if (!amount) throw new Error('amount required');
             if (!cardNumber) throw new Error('cardNumber required');
@@ -258,10 +270,11 @@ var COMPASSMAX = function(config) {
                 args: [customerId, amount, cardNumber, expDate, authNumber],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        accountSummary: function(customerId, requestId) {
+        accountSummary: function(customerId, requestId, batch) {
             if (!customerId) throw new Error('customerId required');
 
             var params = {
@@ -270,6 +283,7 @@ var COMPASSMAX = function(config) {
                 args: [customerId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
     };
@@ -277,7 +291,7 @@ var COMPASSMAX = function(config) {
     self.Routes = {
         service: 'routes',
 
-        callins: function(routeNumber, startDate, endDate, requestId) {
+        callins: function(routeNumber, startDate, endDate, requestId, batch) {
             if (!routeNumber) throw new Error('routeNumber required');
 
             var params = {
@@ -286,20 +300,22 @@ var COMPASSMAX = function(config) {
                 args: [routeNumber, startDate, endDate],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        listRoutes: function(requestId) {
+        listRoutes: function(requestId, batch) {
             var params = {
                 service: this.service,
                 method: 'listRoutes',
                 args: [],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        listRouteStops: function(routeId, requestId) {
+        listRouteStops: function(routeId, requestId, batch) {
             if (!routeId) throw new Error('routeId required');
             var params = {
                 service: this.service,
@@ -307,10 +323,11 @@ var COMPASSMAX = function(config) {
                 args: [routeId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        getRouteInfo: function(routeId, requestId) {
+        getRouteInfo: function(routeId, requestId, batch) {
             if (!routeId) throw new Error('routeId required');
             var params = {
                 service: this.service,
@@ -318,10 +335,11 @@ var COMPASSMAX = function(config) {
                 args: [routeId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        listReadyTickets: function(routeId, requestId) {
+        listReadyTickets: function(routeId, requestId, batch) {
             if (!routeId) throw new Error('routeId required');
             var params = {
                 service: this.service,
@@ -329,10 +347,11 @@ var COMPASSMAX = function(config) {
                 args: [routeId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
 
-        listTruckTickets: function(routeId, requestId) {
+        listTruckTickets: function(routeId, requestId, batch) {
             if (!routeId) throw new Error('routeId required');
             var params = {
                 service: this.service,
@@ -340,6 +359,7 @@ var COMPASSMAX = function(config) {
                 args: [routeId],
                 id: requestId || 1,
             };
+            if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
         },
     };
@@ -413,6 +433,33 @@ var COMPASSMAX = function(config) {
             };
             return transport.makeRequest(self.CONFIG, params);
         },
+
+        batch: function(data) {
+            data = forceToArray(data);
+            var params = data.map(function(d, i) {
+                checkType('data.service', d.service, 'String');
+                checkType('data.method', d.method, 'String');
+
+                if (!self[d.service]) throw new Error(d.service + ' is not a supported service');
+                if (!self[d.service][d.method]) throw new Error(d.method + ' is not a supported method of service ' + d.service);
+                var fn = self[d.service][d.method];
+
+
+                var id = data.requestId || i + 1;
+                var args = d.args.concat([id, true]);
+                var boundArgs = [id, true];
+
+                //Copy args and fill, forcing requestId and batch to be last two arguments
+                var args = d.args.slice();
+                while (args.length + boundArgs.length < fn.length) {
+                    args.push(undefined);
+                }
+                args = args.concat(boundArgs);
+
+                return fn.apply(self[d.service], args);
+            });
+            return transport.makeRequest(self.CONFIG, params, true);
+        }
     };
 }
 module.exports = COMPASSMAX;
@@ -431,15 +478,4 @@ function findMissingFields(name, object, requiredFields) {
     if (missingFields.length) {
         return 'Argument \'' + name + '\' is missing the following fields: ' + missingFields.join(', ');
     } else return null;
-}
-
-function checkType(name, value, type) {
-    if (getType(value) !== type) {
-        throw new Error('argument \'' + name + '\' must be type ' + type);
-    }
-}
-
-function getType(value) {
-    var longType = Object.prototype.toString.call(value);
-    return longType.slice(8, -1);
 }

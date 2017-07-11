@@ -3,6 +3,7 @@ var net = require('net');
 var base64 = require('base64-js');
 var framer = require('./framer.js');
 var Promise = require('bluebird');
+var forceToArray = require('./tools').forceToArray;
 
 /**
  * Formats and makes a TCP request
@@ -22,7 +23,7 @@ var Promise = require('bluebird');
  *          param{id}               Int.     Identifier for request.
  */
 
-function makeRequest(config, params) {
+function makeRequest(config, params, batch) {
     var handshakeReceived = false;
     var ephemeralKeypair;
     var remoteEphemeralPublic;
@@ -74,48 +75,53 @@ function makeRequest(config, params) {
                 handshakeReceived = true;
 
                 //Upon receiving their key, send our request
-                //Wrap params in array, as expected by server
-                params = [params];
+                params = forceToArray(params);
+
                 message = framer.encode(params, remoteEphemeralPublic, ephemeralKeypair.privateKey);
                 client.write(new Buffer(message.buffer));
             } else {
 
-                if(!receivedData) receivedData = data;
+                if (!receivedData) receivedData = data;
                 else receivedData = Buffer.concat([receivedData, data]);
-                
-                if(framer.isEndOfNetstring(receivedData))
-                {
+
+                if (framer.isEndOfNetstring(receivedData)) {
                     //Parse server response and decode
                     var msg;
-                    var err;                
+                    var err;
 
                     //Handle badly encoded responses
                     try {
                         msg = framer.decode(receivedData, remoteEphemeralPublic, ephemeralKeypair.privateKey);
-                    } catch(e) {
+                    } catch (e) {
                         client.destroy();
                         var eMsg = e.message || 'Unable to decode message';
                         err = new Error(eMsg);
-                        err.params = params[0];
-                        err.identifier = config.identifier;
-
-                        return reject(e);
-                    }
-                    client.destroy();
-
-                    if (msg[0].error) {
-                        //Format error object
-                        err = new Error(msg[0].error.message);
-                        err.code = msg[0].error.code;
-                        err.data = msg[0].data;
-                        err.warnings = msg[0].warnings;
-                        err.params = params[0];
+                        err.params = batch ? params : params[0];
                         err.identifier = config.identifier;
 
                         return reject(err);
                     }
+                    client.destroy();
 
-                    return resolve(msg[0]);
+                    var response = msg.map(function(m, i) {
+                        if (m.error) {
+                            //Format error object
+                            var e = new Error(m.error.message);
+                            e.code = m.error.code;
+                            e.data = m.data;
+                            e.warnings = m.warnings;
+                            e.params = params[i];
+                            e.identifier = config.identifier;
+                            return e;
+                        }
+                        return m;
+                    });
+
+                    if (batch) return resolve(response);
+                    else {
+                        if (response[0] instanceof Error) return reject(response[0]);
+                        return resolve(response[0]);
+                    }
                 }
             }
         });
