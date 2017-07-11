@@ -184,27 +184,32 @@ var COMPASSMAX = function(config) {
 
                 if (!serviceTransactions || !serviceTransactions.length) return;
 
-                var ticketPromises = [];
-                return serviceTransactions.reduce(function(prev, trans) {
-                    return prev.then(function() {
-                        transactionByTicketNumber[trans.ticketNum] = trans;
-                        return self.Accounts.serviceTransactionDetail(trans.transactionId, requestId);
-                    }).then(function(res) {
-                        ticketPromises.push(res);
-                    });
-                }, Promise.resolve()).then(function() {
-                    return ticketPromises;
+                var serviceTransactionCalls = serviceTransactions.map(function(trans) {
+                    transactionByTicketNumber[trans.ticketNum] = trans;
+                    return {
+                        service: 'Accounts',
+                        method: 'serviceTransactionDetail',
+                        args: [trans.transactionId],
+                        requestId: trans.transactionId
+                    };
                 });
+                return self.Util.batch(serviceTransactionCalls);
             }).then(function(tickets) {
                 if (!tickets || !tickets.length) return [];
 
-                //Add transaction description to ticket
+                //Add transaction description to ticket, check for batch call errors
                 tickets.forEach(function(ticket) {
+                    if (ticket instanceof Error) throw ticket;
+
                     if (!ticket.data) return;
                     if (transactionByTicketNumber[ticket.data.ticketNum]) {
                         ticket.data.description = transactionByTicketNumber[ticket.data.ticketNum].description;
                         ticket.data.createdDate = transactionByTicketNumber[ticket.data.ticketNum].date;
                     }
+                });
+
+                tickets.sort(function(a, b) {
+                    return a.data.ticketNum - b.data.ticketNum;
                 });
                 return tickets;
             });
