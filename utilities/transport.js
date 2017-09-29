@@ -4,6 +4,10 @@ var base64 = require('base64-js');
 var framer = require('./framer.js');
 var Promise = require('bluebird');
 var forceToArray = require('./tools').forceToArray;
+var netstring = require('netstring-plus');
+
+//Encoder class has no mutable state, safe to initialize once
+var encoder = new netstring.Encoder();
 
 /**
  * Formats and makes a TCP request
@@ -33,6 +37,7 @@ function makeRequest(config, params, batch) {
     var staticPublic = base64.toByteArray(config.staticPublic);
     var staticSecret = base64.toByteArray(config.staticSecret);
 
+    var decoder = new netstring.Decoder();
 
     return new Promise(function(resolve, reject) {
         //Open a new connection - 1 connection per request
@@ -42,6 +47,7 @@ function makeRequest(config, params, batch) {
             ephemeralKeypair = framer.generateEphemeralKeys();
 
             var handshake = framer.prepareHandshake(staticPublic, staticSecret, ephemeralKeypair.publicKey);
+            handshake = encoder.encode(handshake);
             client.write(new Buffer(handshake));
         });
 
@@ -64,34 +70,38 @@ function makeRequest(config, params, batch) {
         //When date received from server
         client.on('data', function(data) {
             if (!handshakeReceived) {
-                //Read the server's handshake
-                remoteEphemeralPublic = framer.remoteEphemeralKey(data);
-                if (!framer.serverKeyMatches(data, config.key)) {
-                    var eMsg = 'Signing key from server does not match expected public server key. Closing connection.';
-                    if (config.identifier) eMsg += '  Identifier: ' + config.identifier;
-                    client.destroy(eMsg);
-                    return reject(eMsg);
+
+                decoder.pumpArray(data);
+                if (decoder.state === 'complete') {
+
+                    var decoderMessage = decoder.getLatestMessage();
+                    remoteEphemeralPublic = framer.remoteEphemeralKey(decoderMessage);
+                    if (!framer.serverKeyMatches(decoderMessage, config.key)) {
+                        var eMsg = 'Signing key from server does not match expected public server key. Closing connection.';
+                        if (config.identifier) eMsg += '  Identifier: ' + config.identifier;
+                        client.destroy(eMsg);
+                        return reject(eMsg);
+                    }
+                    handshakeReceived = true;
                 }
-                handshakeReceived = true;
 
                 //Upon receiving their key, send our request
                 params = forceToArray(params);
-
                 message = framer.encode(params, remoteEphemeralPublic, ephemeralKeypair.privateKey);
+                message = encoder.encode(message);
                 client.write(new Buffer(message.buffer));
             } else {
 
-                if (!receivedData) receivedData = data;
-                else receivedData = Buffer.concat([receivedData, data]);
+                decoder.pumpArray(data);
 
-                if (framer.isEndOfNetstring(receivedData)) {
+                if (decoder.state === 'complete') {
                     //Parse server response and decode
                     var msg;
                     var err;
 
                     //Handle badly encoded responses
                     try {
-                        msg = framer.decode(receivedData, remoteEphemeralPublic, ephemeralKeypair.privateKey);
+                        msg = framer.decode(decoder.getLatestMessage(), remoteEphemeralPublic, ephemeralKeypair.privateKey, true, true);
                     } catch (e) {
                         client.destroy();
                         var eMsg = e.message || 'Unable to decode message';

@@ -1,4 +1,4 @@
-/* Module responsible for creating and parsing netstring frames */
+/* Module responsible for encoding and decoding netstring frames */
 
 /* Dependencies */
 var sodium = require('libsodium-wrappers');
@@ -13,55 +13,13 @@ var maxArgSize = 100000;
 //Local ephemeral keypair
 var keypair;
 
-//Netstring+ format variables
-var delim = ':';
-var trailing = '\n';
-
-
-/* Netstring methods */
-
-/**
- * Parses the payload out of a netstring
- */
-function parseNetstring(data) {
-    var stringifiedData = data.toString('utf8');
-
-    //Find header delimiter
-    for (var i = 0; i < stringifiedData.length; i++) {
-        if (stringifiedData[i] === delim) break;
-    }
-    var header = data.toString("utf8", 0, i + 1);
-    var header_size = parseInt(header, 16);
-    return data.slice(header.length, header.length + header_size);
-}
-
-/**
- * Creates a netstring from a payload
- */
-function createNetstring(payload) {
-    var length = payload.length;
-
-    // Headers are in hexadecimal.
-    var header_bytes = encode_utf8(length.toString(16) + delim);
-    var bytes = concatBytes(header_bytes, payload, encode_utf8(trailing));
-    return bytes;
-}
-
-function isEndOfNetstring(data) {
-    var ns = data.toString('utf8');
-    return ns[ns.length - 1] === trailing;
-}
-
-
 
 /* Crypto Methods */
 
 /**
  * Parses remote ephemeral public key from netstring payload
  */
-function remoteEphemeralKey(data) {
-    var payload = parseNetstring(data);
-
+function remoteEphemeralKey(payload) {
     // Remote signing key.
     var publicA = payload.slice(0, sodium.crypto_sign_PUBLICKEYBYTES);
 
@@ -77,9 +35,7 @@ function remoteEphemeralKey(data) {
 /**
  * Checks the public server key from netstring payload
  */
-function serverKeyMatches(data, serverKey) {
-    var payload = parseNetstring(data);
-
+function serverKeyMatches(payload, serverKey) {
     // Remote signing key.
     var publicA = toArrayBuffer(payload.slice(0, sodium.crypto_sign_PUBLICKEYBYTES));
     var key = base64.toByteArray(serverKey);
@@ -93,8 +49,7 @@ function serverKeyMatches(data, serverKey) {
 function prepareHandshake(staticSigningPublic, staticSigningSecret, ephemeralPublic) {
     //Sign and concat
     var signedEphemeralKey = sodium.crypto_sign(ephemeralPublic, staticSigningSecret);
-    var payload = concatBytes(staticSigningPublic, signedEphemeralKey);
-    return createNetstring(payload);
+    return concatBytes(staticSigningPublic, signedEphemeralKey);
 }
 
 //Encodes the message with our secret and the server's public key
@@ -106,21 +61,19 @@ function encode(message, publicKey, secretKey) {
     message = encode_utf8(message);
     var nonce = sodium.randombytes_buf(sodium.crypto_box_NONCEBYTES);
     var encoded = sodium.crypto_box_easy(message, nonce, publicKey, secretKey);
-    encoded = concatBytes(nonce, encoded);
-    return createNetstring(encoded);
+    return concatBytes(nonce, encoded);
 }
 
-function decode(data, publicKey, secretKey, toJSON) {
+function decode(payload, publicKey, secretKey, toJSON) {
     //Default output as JSON to true
     if (toJSON !== false) toJSON = true;
 
-    var payload = parseNetstring(data);
     var nonce = payload.slice(0, sodium.crypto_box_NONCEBYTES);
     var encodedMessage = payload.slice(nonce.length, payload.length);
 
     var decodedMessage = sodium.crypto_box_open_easy(encodedMessage, nonce, publicKey, secretKey);
 
-    var string = decode_utf8(decodedMessage);
+    var string = bytes_to_utf8(decodedMessage);
     return toJSON ? JSON.parse(string) : string;
 }
 
@@ -174,12 +127,6 @@ function encode_utf8(s) {
     return utf8_to_bytes(utf8_str);
 }
 
-function decode_utf8(b) {
-    // Get a utf8 string, then decode to native utf-16.
-    var utf8_str = bytes_to_utf8(b);
-    return utf8_str;
-}
-
 function arraysEqual(a1, a2) {
     if (a1.length != a2.length) return false;
 
@@ -201,9 +148,6 @@ function toArrayBuffer(buf) {
 
 
 module.exports = {
-    createNetstring: createNetstring,
-    parseNetstring: parseNetstring,
-    isEndOfNetstring: isEndOfNetstring,
     prepareHandshake: prepareHandshake,
     serverKeyMatches: serverKeyMatches,
     remoteEphemeralKey: remoteEphemeralKey,
