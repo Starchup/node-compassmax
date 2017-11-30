@@ -1,5 +1,5 @@
 /* Module Dependencies */
-var transport = require('./utilities/transport');
+var Transport = require('./utilities/transport');
 var tools = require('./utilities/tools');
 var checkType = tools.checkType;
 var forceToArray = tools.forceToArray;
@@ -24,6 +24,11 @@ var COMPASSMAX = function(config) {
     //Config
     self.CONFIG = config;
 
+    var transport = new Transport(config);
+
+    //Expose for easy cleanup, error handling
+    self.closeConnection = transport.closeConnection;
+
 
     //Customers methods
     self.Customers = {
@@ -37,7 +42,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'findCustomers',
                 args: [searchTerms],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -52,7 +57,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'createCustomer',
                 args: [profileData],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -64,7 +69,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'availablePickups',
                 args: [customerId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -79,7 +84,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'schedulePickup',
                 args: [data.customerId, data.routeNumber, data.date, data.message],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -91,7 +96,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'getScheduledPickups',
                 args: [customerId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -135,7 +140,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'updateProfile',
                 args: [customerId, profileData],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -148,7 +153,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'getProfile',
                 args: [customerId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -167,7 +172,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'deliverRouteTickets',
                 args: [ticketIds],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -229,7 +234,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'transactionHistory',
                 args: [customerId, startDate, endDate],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params).then(function(result) {
                 //Format response from arrays to objects
@@ -255,7 +260,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'serviceTransactionDetail',
                 args: [transactionId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -273,7 +278,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'postCCPayment',
                 args: [customerId, amount, cardNumber, expDate, authNumber],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -286,7 +291,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'accountSummary',
                 args: [customerId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -303,7 +308,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'callins',
                 args: [routeNumber, startDate, endDate],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -314,7 +319,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'listRoutes',
                 args: [],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -326,7 +331,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'listRouteStops',
                 args: [routeId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -338,7 +343,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'getRouteInfo',
                 args: [routeId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -350,7 +355,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'listReadyTickets',
                 args: [routeId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -362,7 +367,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'listTruckTickets',
                 args: [routeId],
-                id: requestId || 1,
+                id: requestId,
             };
             if (batch) return params;
             return transport.makeRequest(self.CONFIG, params);
@@ -379,7 +384,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'services',
                 args: [],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params);
         },
@@ -389,7 +394,7 @@ var COMPASSMAX = function(config) {
                 service: this.service,
                 method: 'rpcVersion',
                 args: [],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params);
         },
@@ -407,7 +412,7 @@ var COMPASSMAX = function(config) {
                 service: service,
                 method: 'methods',
                 args: [],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params);
         },
@@ -421,7 +426,7 @@ var COMPASSMAX = function(config) {
                 service: service,
                 method: 'describeMethod',
                 args: [method],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params);
         },
@@ -434,7 +439,7 @@ var COMPASSMAX = function(config) {
                 service: service,
                 method: 'version',
                 args: [],
-                id: requestId || 1,
+                id: requestId,
             };
             return transport.makeRequest(self.CONFIG, params);
         },
@@ -449,7 +454,7 @@ var COMPASSMAX = function(config) {
                 if (!self[d.service][d.method]) throw new Error(d.method + ' is not a supported method of service ' + d.service);
 
                 var fn = self[d.service][d.method];
-                var id = d.requestId || i + 1;
+                var id = d.requestId;
                 var args = d.args.concat([id, true]);
                 var boundArgs = [id, true];
 
