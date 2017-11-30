@@ -2,7 +2,6 @@
 var net = require('net');
 var base64 = require('base64-js');
 var framer = require('./framer.js');
-var Promise = require('bluebird');
 var forceToArray = require('./tools').forceToArray;
 var netstring = require('netstring-plus');
 
