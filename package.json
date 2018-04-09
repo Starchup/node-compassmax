@@ -1,6 +1,6 @@
 {
   "name": "node-compassmax",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Compassmax POS wrapper for Node JS",
   "main": "compassmax.js",
   "scripts": {},
@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/Starchup/node-compassmax#readme",
   "dependencies": {
-    "base64-js": "^1.1.2",
-    "iconv-lite": "^0.4.15",
-    "libsodium-wrappers": "^0.3.0",
-    "netstring-plus": "^1.0.0"
+    "base64-js": "1.2.3",
+    "iconv-lite": "0.4.21",
+    "libsodium-wrappers": "0.7.3",
+    "netstring-plus": "1.0.0"
   }
 }
